@@ -1,0 +1,141 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Mensalidade {
+  id    Int     @id @default(autoincrement())
+  valor Float @db.Double
+  dataPag DateTime @db.Date 
+  idResp Int 
+  responsavel Responsavel @relation(fields: [idResp],references: [id])
+  @@map("tb_user")
+}
+
+model Responsavel {
+  id Int @id @default(autoincrement())
+  nameResp String @db.VarChar(255)
+  dataNasc DateTime @db.Date 
+  email String  @db.VarChar(100)
+  telComercial String @db.VarChar(15)
+  telCelular String @db.VarChar(15)
+  cidade String @db.VarChar(100)
+  estado String @db.VarChar(100)
+  mensalidades Mensalidade[]
+  crianca Crianca[]
+  @@map("tb_responsavel")
+}
+
+model Crianca {
+  id Int @id @default(autoincrement())
+  nameCrianca String @db.VarChar(255)
+  dataNasc DateTime @db.Date 
+  email String  @db.VarChar(100)
+  telCelular String @db.VarChar(15)
+  cidade String @db.VarChar(100)
+  estado String @db.VarChar(100)
+  idResp Int
+  idEndereco Int
+  responsavel Responsavel @relation(fields: [idResp],references: [id])
+  endereco Endereco @relation(fields: [idEndereco],references: [id])
+  rotas RotaCrianca[]
+  @@map("tb_crianca")
+}
+
+model Endereco {
+  id Int @id @default(autoincrement())
+  rua String @db.VarChar(255)
+  bairro String @db.VarChar(255)
+  numero Float 
+  cep Float
+  crianca Crianca[]
+  escola Escola[]
+  @@map("tb_endereco")
+}
+
+model RotaCrianca {
+  id Int @id @default(autoincrement())
+  idCrianca Int
+  idRota Int
+  crianca Crianca @relation(fields: [idCrianca], references: [id])
+  rota Rota @relation(fields: [idRota], references: [id])
+  @@map("tb_rota_crianca")
+}
+
+model Rota {
+  id Int @id @default(autoincrement())
+  idEscola Int
+  idVeiculo Int
+  escola Escola @relation(fields: [idEscola], references: [id])
+  veiculo Veiculo @relation(fields: [idVeiculo], references: [id])
+  criancas RotaCrianca[]
+  @@map("tb_rota")
+}
+
+model Escola {
+  id Int @id @default(autoincrement())
+  nameEscola String @db.VarChar(255) 
+  email String  @db.VarChar(100)
+  telComercial String @db.VarChar(15)
+  telCelular String @db.VarChar(15)
+  idEndereco Int
+  endereco Endereco @relation(fields: [idEndereco],references: [id])
+  rota Rota[]
+  @@map("tb_escola")
+}
+
+model Veiculo {
+  id Int @id @default(autoincrement())
+  marca String @db.VarChar(255)
+  modelo String @db.VarChar(100) 
+  placa String  @db.VarChar(100)
+  anoFabricacao DateTime @db.Date
+  capacidade Int 
+  horaEntrada DateTime @db.Time
+  horaSaida DateTime @db.Time
+  idFuncionario Int
+  funcionario Funcionario @relation(fields: [idFuncionario], references: [id])
+  rotas Rota[]
+  @@map("tb_veiculo")
+}
+
+model Funcionario {
+  id Int @id @default(autoincrement())
+  nameFuncionario String @db.VarChar(255)
+  rg Float @db.Double 
+  cep Float  @db.Double
+  telComercial String @db.VarChar(15)
+  telCelular String @db.VarChar(15)
+  email String  @db.VarChar(100)
+  cidade String @db.VarChar(100)
+  estado String @db.VarChar(100)
+  dataAdm DateTime @db.Date
+  horaEntrada DateTime @db.Time
+  horaSaida DateTime @db.Time
+  cargo String @db.VarChar(100)
+  salario Float @db.Double
+  veiculos Veiculo[]
+  cnh Cnh?
+  @@map("tb_funcionario")
+}
+
+model Cnh {
+  id Int @id @default(autoincrement())
+  nRegistro Float @db.Double
+  validade DateTime @db.Date
+  primeirahabilitacao DateTime @db.Date
+  categoria String @db.Char(1)
+  idFuncionario Int @unique
+  funcionario Funcionario @relation(fields: [idFuncionario], references: [id])
+  @@map("tb_cnh")
+}
